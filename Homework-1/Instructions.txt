@@ -1,0 +1,84 @@
+Hello all,
+
+ 
+
+Your first project will be to implement five enumerable methods collect, inject, select, max and max_by in Ruby. For information on how the methods should work, please refer to the Ruby documentation: https://ruby-doc.org/core-2.4.1/Enumerable.html. 
+
+ 
+
+Assume the caller object has a method called each. Each is called with a Ruby block.  The block details how and what to do while iterating over each item in the enumerable object, and returns the result.  The implementation of Enumerable methods is to call the each method and process its results accordingly. Any object that implements the method each should be able to use your enumerable methods.
+
+ 
+
+Make sure your enumerable method names are different so that you are not testing the default iterators.  Use cs253 as the prefix, so your Enumerable methods are cs253collect, cs253inject, cs253select, cs253max, and cs253max_by.
+
+ 
+
+First, implement cs253collect and cs253inject using the each method.
+
+ 
+
+Second, implement cs253select, cs253max and cs253max_by by using cs253collect and/or cs253inject methods.  The max and max_by methods in Ruby take an extra parameter n to return the top n items. For this part, your implementation only has to return the top one item.
+
+ 
+
+Do *not* use the each method when implementing cs253select, cs253max and cs253max_by.
+
+ 
+
+Ruby Enumerable methods may be called without a block and if so, return an enumerator instead.  In this and later assignments, you do not need to handle that case, i.e. your methods are always called with a block.
+
+ 
+
+Implement the five methods in a module called CS253Enumerable.  Include the module before using them. For example, to test your methods on arrays, include the module as follows:
+
+ 
+
+module CS253Enumerable
+
+   def cs253collect
+
+      … # use each
+
+   end  
+
+   …
+
+   def cs253select
+
+       … # use cs253collect and/or cs253inject, BUT *not* each
+
+   end 
+
+   ...
+
+end 
+
+
+
+
+class Array
+
+   include CS253Enumerable
+
+end 
+
+ 
+
+[1,2,3].cs253collect{ … }
+
+ 
+
+You will also unit test your code. Please create at least 3 tests per method (15 tests in total). Feel free to use any unit testing library of your choice, I would recommend Minitest: https://github.com/seattlerb/minitest. Minitest should be already included with a Ruby distribution.  Travis, which is integrated with Github, is another tool that could be used for test automation. 
+
+ 
+
+Submissions should be in a folder named FirstName_LastName_Enumerable and should include a README.txt detailing how to run the unit tests, crediting any outside sources/libraries used, and any other information you think is important. Your ruby test file should be named yournetid_enum_test.rb.  Submit the folder to blackboard.
+
+ 
+
+If you have any questions, you can post them on Piazza or ask me at pferner2@u.rochester.edu. You can also come to our office hours, which you can find on the class website. My office hours are 2:30 - 3:30 on Tuesdays in Carlson Library ground floor.
+
+ 
+
+This assignment is due on Tuesday, 9/11, 11:59 pm.
