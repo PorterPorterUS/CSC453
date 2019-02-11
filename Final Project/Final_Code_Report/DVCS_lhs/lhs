@@ -1,0 +1,175 @@
+#!/usr/local/bin/ruby
+dir = File.dirname(__FILE__)
+load dir + "/revlog.rb"
+load dir + "/repository.rb"
+load dir + "/changelog.rb"
+require dir + "/revlog"
+
+def isNum(s)
+    flag = true
+    s.each_byte do |c|
+        if ! (c <= 57 and c >= 48)
+            flag = false
+            break
+        end
+    end
+    return flag
+end
+cmd = ARGV[0]
+args = ARGV[1..-1]
+if cmd == "help"
+    puts "Welcome to lhs DVCS, here are some help for you, hope you enjoy it when you use our system."
+    puts 
+    puts "lhs init: used to create a new repository"
+    puts 
+    puts "lhs add files/file: used to add (a) file/files to repository"
+    puts 
+    puts "lhs delete files/file: used to delete (a) file/files to repository"
+    puts 
+    puts "lhs commit: used to commit change"
+    puts 
+    puts "lhs diff revision1 revision2 filename: used to find the difference of the given filename under these two revisions"
+    puts 
+    puts "lhs cat filename revision: used to show the content of the given file under given revision"
+    puts 
+    puts "lhs heads: used to show the changeset which does not have child"
+    puts 
+    puts "lhs log: used to show all history information"
+    puts 
+    puts "lhs stat: used to show status of files, A means added, C means changed, D means deleted"
+    puts
+    puts "lhs clone (org_dirpath), new_dirpath: used to clone the repository of org_dirpath into a given dir path. "
+    puts "The default of org_dirpath is current dir_path"
+    puts
+    puts "lhs merge otherRepo: used to merge the repository of given path into current repository"
+    puts 
+    puts "lhs checkout revision: used to check out to given revision"
+    puts 
+    puts "other tip: "
+    puts "1. we provide a sample usage in README.txt, you can use it to learn how to use our system"
+    puts 
+    puts "2. you should make sure you enter the valid revision number, it should be a non-nagetive number like 0, 1, 2"
+    puts "and also you can not enter a too big number, like if you enter 123, but there only 5 revisions, it will throw error"
+    puts 
+    puts "3. you should make sure you enter the valid file name, you can not do any lhs operation to a non-exist file."
+    exit(0)
+end
+if cmd == "init"
+  repo = Repository.new(".", 1)
+  exit(0)
+else
+  repo = Repository.new
+end
+
+if cmd == "checkout"
+  rev = repo.changelog.tip
+  if args.length
+    rev = args[0].to_i
+  end
+  repo.checkout(rev)
+
+elsif cmd == "add"
+  args.each do |f|
+      if !File.file?(f)
+          puts "[Error!] Added file does not exist!"
+          exit
+      end
+  end
+  repo.add(args)
+
+elsif cmd == "delete"
+  args.each do |f|
+      if !File.file?(f)
+          puts "[Error!] Deleted file does not exist!"
+          exit
+      end
+  end
+  repo.delete(args)
+
+elsif cmd == "commit"
+  repo.commit()
+
+elsif cmd == "stat"
+  repo.diffdir(repo.root)
+
+elsif cmd == "cat"
+    if args.length != 2
+        puts "[Error!] The number of arguments should be 2"
+        exit
+    end
+    if (isNum args[0]) or (!isNum args[1])
+        puts "[Error!] Invalid input! The first argument should be filename (String) and the second argument should be revision number (Integer)!"
+        exit
+    end
+    if !File.file?(args[0])
+        puts "[Error!] Input file does not exist!"
+        exit
+    end
+
+    p repo.cat(args[0].to_s, args[1].to_i)
+
+elsif cmd == "diff"
+    if args.length != 3
+        puts "[Error!] The number of arguments should be 3"
+        exit
+    end
+    if (!isNum args[0]) or (!isNum args[1]) or (isNum args[2])
+        puts "[Error!] Invalid input! The first and the second arguments should be revision number (Integer), the third argument should be filename (String)"
+        exit
+    end
+    if !File.file?(args[2])
+        puts "[Error!] Input file does not exist!"
+        exit
+    end
+    diff = repo.diff(args[0].to_i, args[1].to_i, args[2].to_s)
+    diff.each do |e|
+        p e
+    end
+
+elsif cmd == "clone"
+    # repo.clone(args[0].to_s, args[1].to_s)
+    if args.length == 1
+        repo.clone("./", args[0].to_s)
+    else
+        repo.clone(args[0].to_s, args[1].to_s)
+    end
+
+elsif cmd == "log"
+  for i in (0...repo.changelog.tip + 1)
+    changes = repo.changelog.changeset(i)
+    (p1, p2) = repo.changelog.parents(i)
+    puts "%d: %d %d %s" % [i, p1, p2, repo.changelog.node(i).unpack('H*').first]
+    puts "manifest nodeid: " % changes[0].unpack('H*').first
+    puts "User: %s" % changes[1]
+    puts "changed files: "
+    changes[3].each do |f|
+      puts f
+    end
+    puts "description: %s"% changes[4]
+  end
+
+elsif cmd == "heads"
+    i = repo.changelog.tip
+    if i < 0
+        puts "Please firstly add file into stage then execute heads operation."
+        return
+    end
+    changes = repo.changelog.changeset(i)
+    (p1, p2) = repo.changelog.parents(i)
+    puts "%d: %d %d %s" % [i, p1, p2, repo.changelog.node(i).unpack('H*').first]
+    puts "manifest nodeid: %s" % changes[0].unpack('H*').first
+    puts "User: %s" % changes[1]
+    puts "changed files: "
+    changes[3].each do |f|
+      puts f
+    end
+    puts "description: %s"% changes[4]
+
+elsif cmd == "merge"
+    other = Repository.new(args[0])
+    repo.merge(other)
+
+elsif cmd == "help"
+    
+end
+
