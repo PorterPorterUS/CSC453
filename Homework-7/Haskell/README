@@ -1,0 +1,40 @@
+Name: Hao Huang
+
+1. How to build and run:
+Open a terminal, type:
+ghc test.hc
+./test
+
+2. Explanation:
+a). map is to apply a function to each element of a structure and keep the structure; fold is to apply a function to each element of a structure and returns a single value
+b). 
+instance Iterator List where
+  -- lhs: two parameters, one is a function f and one is a list
+  -- rhs: apply f to the first element of the list and recursively to the remaining of the list, and finally concatenate them.
+  iterMap f (Cons head tail) = Cons (f head) (iterMap f tail)
+  iterMap f Nil = Nil 
+
+  -- lhs: three parameters, the first is a function f, the second is a result, the third is a list; 
+  -- rhs: apply f to the first element of the list and pass this result and the remaining of the list to the iterator again.
+  iterFold f res (Cons head tail) = iterFold f (f res head) tail
+  iterFold f res Nil = res
+
+instance Iterator Tree where
+  -- lhs: two parameters, one is a function f and one is a tree
+  -- rhs: apply f to the first element of the tree and recursively to the remaining of the tree, and finally re-build them as an entire tree
+  iterMap f (Branch root children) = Branch (f root) (iterMap (iterMap f) children) 
+  iterMap f Leaf = Leaf
+
+  -- lhs: three parameters, the first is a function f, the second is a result, the third is a tree; 
+  -- rhs: apply f to the first element of the tree and pass this result and the remaining of the tree to the iterator again.
+  iterFold f res (Branch root children) = iterFold (iterFold f) (f res root) children
+  iterFold f res Leaf = res
+
+instance Iterator Queue where
+  -- lhs: two parameters, one is a function f and one is a queue
+  -- rhs: apply f to the first element of the queue and recursively to the remaining of the queue, and finally rebalance them as a queue.
+  iterMap f (Queue head tail) = Queue (iterMap f head) (iterMap f tail)
+  
+  -- lhs: three parameters, the first is a function f, the second is a result, the third is a queue; 
+  -- rhs: apply f to the first element of the queue and pass this result and the remaining of the queue to the iterator again.
+  iterFold f res (Queue head tail) = iterFold f (iterFold f res head) tail
